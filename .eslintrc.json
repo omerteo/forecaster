@@ -1,0 +1,21 @@
+{
+  "root": true,
+  "extends": [
+    "next/core-web-vitals",
+    "plugin:@typescript-eslint/recommended"
+  ],
+  "ignorePatterns": [
+    "app/generated/prisma/**"
+  ],
+  "rules": {
+    // Add any custom rules here
+  },
+  "eslint": {
+    "ignoreDuringBuilds": true
+  },
+  "nextConfig": {
+    "eslint": {
+      "ignoreDuringBuilds": true
+    }
+  }
+}

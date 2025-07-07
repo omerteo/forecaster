@@ -1,0 +1,40 @@
+{
+  "name": "forecaster",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "import:csv": "ts-node --project tsconfig.scripts.json scripts/import-csv.ts",
+    "reset-and-import:csv": "ts-node --project tsconfig.scripts.json scripts/reset-and-import-csv.ts",
+    "summarize-db": "ts-node --project tsconfig.scripts.json scripts/summarize-db.ts"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "@prisma/client": "^6.11.1",
+    "csv-parser": "^3.2.0",
+    "mongodb": "^6.17.0",
+    "next": "15.3.4",
+    "openai": "^5.8.2",
+    "prisma": "^6.11.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "15.3.4",
+    "tailwindcss": "^4",
+    "ts-node": "^10.9.2",
+    "typescript": "^5"
+  },
+  "eslintIgnore": [
+    "app/generated/prisma/**"
+  ]
+}
