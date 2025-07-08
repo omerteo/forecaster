@@ -33,6 +33,7 @@ export function PromptForm({ onResult }: { onResult: (result: string | null, err
       body: JSON.stringify({ prompt })
     });
     if (!res.ok) {
+      console.error("Failed to get summary:", res.status, res.statusText);
       onResult(null, "Failed to get summary");
       return;
     }
