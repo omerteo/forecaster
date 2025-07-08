@@ -4,13 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "npx prisma generate && next build",
+    "vercel-build": "npx prisma generate && next build",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "import:csv": "ts-node --project tsconfig.scripts.json scripts/import-csv.ts",
     "reset-and-import:csv": "ts-node --project tsconfig.scripts.json scripts/reset-and-import-csv.ts",
     "summarize-db": "ts-node --project tsconfig.scripts.json scripts/summarize-db.ts",
-    "postinstall": "prisma generate"
+    "postinstall": "npx prisma generate"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
