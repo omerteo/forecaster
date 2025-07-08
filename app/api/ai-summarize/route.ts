@@ -1,4 +1,3 @@
-
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { GoogleGenerativeAI } from '@google/generative-ai';
@@ -8,9 +7,26 @@ const globalForPrisma = globalThis as unknown as { prisma: PrismaClient | undefi
 const prisma = globalForPrisma.prisma || new PrismaClient();
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 
+function checkEnvVars(provider: string) {
+  if (provider === 'openai' && !process.env.OPENAI_API_KEY) {
+    throw new Error('OPENAI_API_KEY is not set in environment variables.');
+  }
+  if (provider === 'gemini' && !process.env.GEMINI_API_KEY) {
+    throw new Error('GEMINI_API_KEY is not set in environment variables.');
+  }
+}
+
+function checkPrismaModel() {
+  if (!prisma.itemDemand) {
+    throw new Error('Prisma model "itemDemand" is not available. Check your schema and migration.');
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     const { provider = 'gemini', prompt } = await req.json();
+    checkEnvVars(provider);
+    checkPrismaModel();
     const total = await prisma.itemDemand.count();
     const amountAgg = await prisma.itemDemand.aggregate({ _min: { amount: true }, _max: { amount: true }, _avg: { amount: true } });
     const quantityAgg = await prisma.itemDemand.aggregate({ _min: { quantity: true }, _max: { quantity: true }, _avg: { quantity: true } });
@@ -50,9 +66,12 @@ export async function POST(req: NextRequest) {
       sample: sample[0] || null,
       provider
     });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("[POST /api/ai-summarize] Error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: typeof error === "object" && error !== null && "message" in error ? (error as { message?: string }).message || "Internal server error" : "Internal server error" },
+      { status: 500 }
+    );
   }
 }
 
@@ -60,6 +79,8 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const provider = searchParams.get('provider') || 'gemini';
+    checkEnvVars(provider);
+    checkPrismaModel();
     const total = await prisma.itemDemand.count();
     const amountAgg = await prisma.itemDemand.aggregate({ _min: { amount: true }, _max: { amount: true }, _avg: { amount: true } });
     const quantityAgg = await prisma.itemDemand.aggregate({ _min: { quantity: true }, _max: { quantity: true }, _avg: { quantity: true } });
@@ -97,8 +118,11 @@ export async function GET(req: NextRequest) {
       sample: sample[0] || null,
       provider
     });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("[GET /api/ai-summarize] Error:", error);
-    return NextResponse.json({ error: error }, { status: 500 });
+    return NextResponse.json(
+      { error: typeof error === "object" && error !== null && "message" in error ? (error as { message?: string }).message || "Internal server error" : "Internal server error" },
+      { status: 500 }
+    );
   }
 }
