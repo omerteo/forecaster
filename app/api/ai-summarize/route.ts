@@ -17,30 +17,14 @@ function checkEnvVars(provider: string) {
 
 export async function POST(req: NextRequest) {
   try {
-    const { provider = 'gemini', prompt } = await req.json();
+    const { provider = 'gemini', prompt, summary } = await req.json();
     checkEnvVars(provider);
-    await dbConnect();
-    const total = await ItemDemand.countDocuments();
-    const amountAgg = await ItemDemand.aggregate([
-      { $group: { _id: null, min: { $min: "$amount" }, max: { $max: "$amount" }, avg: { $avg: "$amount" } } }
-    ]);
-    const quantityAgg = await ItemDemand.aggregate([
-      { $group: { _id: null, min: { $min: "$quantity" }, max: { $max: "$quantity" }, avg: { $avg: "$quantity" } } }
-    ]);
-    const minAmount = amountAgg[0]?.min ?? null;
-    const maxAmount = amountAgg[0]?.max ?? null;
-    const avgAmount = amountAgg[0]?.avg ?? null;
-    const minQuantity = quantityAgg[0]?.min ?? null;
-    const maxQuantity = quantityAgg[0]?.max ?? null;
-    const avgQuantity = quantityAgg[0]?.avg ?? null;
-    const sample = await ItemDemand.find().limit(1);
 
-    const summary = `Total records: ${total}\nAmount: min ${minAmount}, max ${maxAmount}, avg ${avgAmount}\nQuantity: min ${minQuantity}, max ${maxQuantity}, avg ${avgQuantity}\nSample: ${JSON.stringify(sample[0])}`;
-
+    // Use the provided summary directly
     let aiSummary = null;
     const basePrompt = prompt && prompt.trim().length > 0
-      ? `${prompt}\n\nHere is a summary of my database:\n${summary}`
-      : `Here is a summary of my database:\n${summary}\n\nPlease provide a high-level analysis and any interesting insights.`;
+      ? `${prompt}\n\nHere is a summary of my database:\n${typeof summary === 'string' ? summary : JSON.stringify(summary, null, 2)}`
+      : `Here is a summary of my database:\n${typeof summary === 'string' ? summary : JSON.stringify(summary, null, 2)}\n\nPlease provide a high-level analysis and any interesting insights.`;
 
     if (provider === 'openai') {
       const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -60,7 +44,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       summary,
       aiSummary,
-      sample: sample[0] || null,
       provider
     });
   } catch (error: unknown) {

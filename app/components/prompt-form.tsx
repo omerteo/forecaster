@@ -31,17 +31,24 @@ export function PromptForm({
       onResult(null, "Prompt is required");
       return;
     }
-    const res = await fetch("/api/ai-summarize", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt }),
-    });
-    if (!res.ok) {
-      console.error("Failed to get summary:", res.status, res.statusText);
-      onResult(null, "Failed to get summary");
+    // Step 1: Fetch summary from /api/summarize-db
+    const summaryRes = await fetch("/api/summarize-db");
+    if (!summaryRes.ok) {
+      onResult(null, "Failed to get database summary");
       return;
     }
-    const data = await res.json();
+    const summaryData = await summaryRes.json();
+    // Step 2: Send prompt and summary to /api/ai-summarize
+    const aiRes = await fetch("/api/ai-summarize", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt, summary: summaryData }),
+    });
+    if (!aiRes.ok) {
+      onResult(null, "Failed to get AI summary");
+      return;
+    }
+    const data = await aiRes.json();
     onResult(data.aiSummary || data.summary || "No summary returned.", null);
     reset();
   }
