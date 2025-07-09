@@ -7,11 +7,13 @@
 generator client {
   provider      = "prisma-client-js"
   binaryTargets = ["native", "rhel-openssl-3.0.x", "linux-musl"]
+  previewFeatures = ["dataProxy"]
 }
 
 datasource db {
   provider = "mongodb"
   url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_DATABASE_URL") // Optional: for local development
 }
 
 model ItemDemand {

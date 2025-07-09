@@ -4,14 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "vercel-build": "npx prisma generate && next build",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "import:csv": "ts-node --project tsconfig.scripts.json scripts/import-csv.ts",
     "reset-and-import:csv": "ts-node --project tsconfig.scripts.json scripts/reset-and-import-csv.ts",
-    "summarize-db": "ts-node --project tsconfig.scripts.json scripts/summarize-db.ts",
-    "postinstall": "npx prisma generate"
+    "summarize-db": "ts-node --project tsconfig.scripts.json scripts/summarize-db.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
@@ -24,6 +22,7 @@
     "csv-parser": "^3.2.0",
     "lucide-react": "^0.525.0",
     "mongodb": "^6.17.0",
+    "mongoose": "^8.16.2",
     "next": "15.3.4",
     "openai": "^5.8.2",
     "prisma": "^6.11.1",

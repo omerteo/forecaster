@@ -1,46 +1,52 @@
 import { NextResponse } from 'next/server';
 
 // PrismaClient singleton for Next.js (prevents too many connections in dev)
-import { PrismaClient } from '@/app/generated/prisma';
-const globalForPrisma = globalThis as unknown as { prisma: PrismaClient | undefined };
-const prisma = globalForPrisma.prisma || new PrismaClient();
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+import dbConnect from '@/lib/mongodb';
+import ItemDemand from '@/lib/itemDemand.model';
 
 export async function GET() {
+  await dbConnect();
   // Count total records
-  const total = await prisma.itemDemand.count();
+  const total = await ItemDemand.countDocuments();
 
-  // Find min/max/avg for amount and quantity using aggregation (prevents OOM and stack errors)
-  const amountAgg = await prisma.itemDemand.aggregate({
-    _min: { amount: true },
-    _max: { amount: true },
-    _avg: { amount: true },
-  });
-  const quantityAgg = await prisma.itemDemand.aggregate({
-    _min: { quantity: true },
-    _max: { quantity: true },
-    _avg: { quantity: true },
-  });
+  // Find min/max/avg for amount and quantity using aggregation
+  const amountAgg = await ItemDemand.aggregate([
+    {
+      $group: {
+        _id: null,
+        min: { $min: "$amount" },
+        max: { $max: "$amount" },
+        avg: { $avg: "$amount" }
+      }
+    }
+  ]);
+  const quantityAgg = await ItemDemand.aggregate([
+    {
+      $group: {
+        _id: null,
+        min: { $min: "$quantity" },
+        max: { $max: "$quantity" },
+        avg: { $avg: "$quantity" }
+      }
+    }
+  ]);
+  const minAmount = amountAgg[0]?.min ?? null;
+  const maxAmount = amountAgg[0]?.max ?? null;
+  const avgAmount = amountAgg[0]?.avg ?? null;
+  const minQuantity = quantityAgg[0]?.min ?? null;
+  const maxQuantity = quantityAgg[0]?.max ?? null;
+  const avgQuantity = quantityAgg[0]?.avg ?? null;
 
-  const minAmount = amountAgg._min.amount;
-  const maxAmount = amountAgg._max.amount;
-  const avgAmount = amountAgg._avg.amount;
-
-  const minQuantity = quantityAgg._min.quantity;
-  const maxQuantity = quantityAgg._max.quantity;
-  const avgQuantity = quantityAgg._avg.quantity;
-
-  // Count missing/nulls for each field
-  const sample = await prisma.itemDemand.findMany({ take: 100 });
+  // Count missing/nulls for each field in a sample
+  const sample = await ItemDemand.find().limit(100);
   const fields = [
-    'id', 'internalId', 'documentNumber', 'amount', 'quantity', 'item', 'itemCategory', 'date', 'shippingState', 'shippingZip', 'shipVia', 'unit', 'model'
-  ] as const;
-  type Field = typeof fields[number];
-  const nullCounts: Record<Field, number> = {
-    id: 0, internalId: 0, documentNumber: 0, amount: 0, quantity: 0, item: 0, itemCategory: 0, date: 0, shippingState: 0, shippingZip: 0, shipVia: 0, unit: 0, model: 0
-  };
-  for (const field of fields) {
-    nullCounts[field] = sample.filter(row => row[field] == null || row[field] === '').length;
+    'internalId', 'documentNumber', 'amount', 'quantity', 'item', 'itemCategory', 'date', 'shippingState', 'shippingZip', 'shipVia', 'unit', 'model'
+  ];
+  const nullCounts = Object.fromEntries(fields.map(f => [f, 0]));
+  for (const doc of sample) {
+    for (const field of fields) {
+      if (doc[field] === null || doc[field] === undefined || doc[field] === '') nullCounts[field]++;
+    }
   }
 
   // Return summary as JSON

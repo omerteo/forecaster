@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { PrismaClient } from '@/app/generated/prisma';
-
-const globalForPrisma = globalThis as unknown as { prisma: PrismaClient | undefined };
-const prisma = globalForPrisma.prisma || new PrismaClient();
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+import dbConnect from '@/lib/mongodb';
+import ItemDemand from '@/lib/itemDemand.model';
 
 function checkEnvVars(provider: string) {
   if (provider === 'openai' && !process.env.OPENAI_API_KEY) {
@@ -16,27 +13,27 @@ function checkEnvVars(provider: string) {
   }
 }
 
-function checkPrismaModel() {
-  if (!prisma.itemDemand) {
-    throw new Error('Prisma model "itemDemand" is not available. Check your schema and migration.');
-  }
-}
+
 
 export async function POST(req: NextRequest) {
   try {
     const { provider = 'gemini', prompt } = await req.json();
     checkEnvVars(provider);
-    checkPrismaModel();
-    const total = await prisma.itemDemand.count();
-    const amountAgg = await prisma.itemDemand.aggregate({ _min: { amount: true }, _max: { amount: true }, _avg: { amount: true } });
-    const quantityAgg = await prisma.itemDemand.aggregate({ _min: { quantity: true }, _max: { quantity: true }, _avg: { quantity: true } });
-    const minAmount = amountAgg._min.amount;
-    const maxAmount = amountAgg._max.amount;
-    const avgAmount = amountAgg._avg.amount;
-    const minQuantity = quantityAgg._min.quantity;
-    const maxQuantity = quantityAgg._max.quantity;
-    const avgQuantity = quantityAgg._avg.quantity;
-    const sample = await prisma.itemDemand.findMany({ take: 1 });
+    await dbConnect();
+    const total = await ItemDemand.countDocuments();
+    const amountAgg = await ItemDemand.aggregate([
+      { $group: { _id: null, min: { $min: "$amount" }, max: { $max: "$amount" }, avg: { $avg: "$amount" } } }
+    ]);
+    const quantityAgg = await ItemDemand.aggregate([
+      { $group: { _id: null, min: { $min: "$quantity" }, max: { $max: "$quantity" }, avg: { $avg: "$quantity" } } }
+    ]);
+    const minAmount = amountAgg[0]?.min ?? null;
+    const maxAmount = amountAgg[0]?.max ?? null;
+    const avgAmount = amountAgg[0]?.avg ?? null;
+    const minQuantity = quantityAgg[0]?.min ?? null;
+    const maxQuantity = quantityAgg[0]?.max ?? null;
+    const avgQuantity = quantityAgg[0]?.avg ?? null;
+    const sample = await ItemDemand.find().limit(1);
 
     const summary = `Total records: ${total}\nAmount: min ${minAmount}, max ${maxAmount}, avg ${avgAmount}\nQuantity: min ${minQuantity}, max ${maxQuantity}, avg ${avgQuantity}\nSample: ${JSON.stringify(sample[0])}`;
 
@@ -79,18 +76,23 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const provider = searchParams.get('provider') || 'gemini';
+
     checkEnvVars(provider);
-    checkPrismaModel();
-    const total = await prisma.itemDemand.count();
-    const amountAgg = await prisma.itemDemand.aggregate({ _min: { amount: true }, _max: { amount: true }, _avg: { amount: true } });
-    const quantityAgg = await prisma.itemDemand.aggregate({ _min: { quantity: true }, _max: { quantity: true }, _avg: { quantity: true } });
-    const minAmount = amountAgg._min.amount;
-    const maxAmount = amountAgg._max.amount;
-    const avgAmount = amountAgg._avg.amount;
-    const minQuantity = quantityAgg._min.quantity;
-    const maxQuantity = quantityAgg._max.quantity;
-    const avgQuantity = quantityAgg._avg.quantity;
-    const sample = await prisma.itemDemand.findMany({ take: 1 });
+    await dbConnect();
+    const total = await ItemDemand.countDocuments();
+    const amountAgg = await ItemDemand.aggregate([
+      { $group: { _id: null, min: { $min: "$amount" }, max: { $max: "$amount" }, avg: { $avg: "$amount" } } }
+    ]);
+    const quantityAgg = await ItemDemand.aggregate([
+      { $group: { _id: null, min: { $min: "$quantity" }, max: { $max: "$quantity" }, avg: { $avg: "$quantity" } } }
+    ]);
+    const minAmount = amountAgg[0]?.min ?? null;
+    const maxAmount = amountAgg[0]?.max ?? null;
+    const avgAmount = amountAgg[0]?.avg ?? null;
+    const minQuantity = quantityAgg[0]?.min ?? null;
+    const maxQuantity = quantityAgg[0]?.max ?? null;
+    const avgQuantity = quantityAgg[0]?.avg ?? null;
+    const sample = await ItemDemand.find().limit(1);
 
     const summary = `Total records: ${total}\nAmount: min ${minAmount}, max ${maxAmount}, avg ${avgAmount}\nQuantity: min ${minQuantity}, max ${maxQuantity}, avg ${avgQuantity}\nSample: ${JSON.stringify(sample[0])}`;
 
