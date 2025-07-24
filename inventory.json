@@ -1,0 +1,92 @@
+[
+  {
+    "Item": "110000",
+    "Bin Number": "",
+    "Location": "Plant 1 - Line 1",
+    "Inventory Number": "",
+    "Status": "Good",
+    "On Hand": 3080155.99844444,
+    "Available": 3080155.99844444
+  },
+  {
+    "Item": "110000",
+    "Bin Number": "101-0102A",
+    "Location": "Plt 17 - PS",
+    "Inventory Number": "",
+    "Status": "Good",
+    "On Hand": 3732.22667,
+    "Available": 3732.22667
+  },
+  {
+    "Item": "110000",
+    "Bin Number": "",
+    "Location": "Plant 3- Line 3",
+    "Inventory Number": "",
+    "Status": "Good",
+    "On Hand": -4.66666667,
+    "Available": 0
+  },
+  {
+    "Item": "110000",
+    "Bin Number": "",
+    "Location": "Plant 1 - Line 2",
+    "Inventory Number": "",
+    "Status": "Good",
+    "On Hand": 20466.66,
+    "Available": 20466.66
+  },
+  {
+    "Item": "110002",
+    "Bin Number": "",
+    "Location": "Plant 1 - Line 1",
+    "Inventory Number": "",
+    "Status": "Good",
+    "On Hand": 96,
+    "Available": 96
+  },
+  {
+    "Item": "110003",
+    "Bin Number": "",
+    "Location": "Plant 1 - Line 1",
+    "Inventory Number": "",
+    "Status": "Good",
+    "On Hand": 48394,
+    "Available": 48394
+  },
+  {
+    "Item": "110003",
+    "Bin Number": "",
+    "Location": "Plt 14 - Line 14",
+    "Inventory Number": "",
+    "Status": "Good",
+    "On Hand": 200,
+    "Available": 200
+  },
+  {
+    "Item": "110003",
+    "Bin Number": "",
+    "Location": "Plant 7 - Line 7",
+    "Inventory Number": "",
+    "Status": "Good",
+    "On Hand": 1,
+    "Available": 1
+  },
+  {
+    "Item": "110003",
+    "Bin Number": "",
+    "Location": "Plant 8 Line 8",
+    "Inventory Number": "",
+    "Status": "Good",
+    "On Hand": 2599,
+    "Available": 2599
+  },
+  {
+    "Item": "110003",
+    "Bin Number": "",
+    "Location": "Plt 12 - Line 12",
+    "Inventory Number": "",
+    "Status": "Good",
+    "On Hand": 3595,
+    "Available": 3595
+  }
+]
